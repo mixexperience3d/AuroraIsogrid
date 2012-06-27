@@ -1,0 +1,24 @@
+Option Explicit
+'Script written by <insert name>
+'Script copyrighted by <insert company name>
+'Script version Wednesday, June 27, 2012 8:33:01 AM
+
+Call Main()
+Sub Main()
+	Dim arrLinee_rosa,str_Rosa
+	arrLinee_rosa = Rhino.GetObjects("Select third Lines( Green ) - Seleziona Terze linee ( Verdi )", 4, False, True)
+	rhino.UnselectAllObjects
+	If Not IsArray(arrLinee_rosa) Then 
+		Exit Sub
+	Else
+		rhino.EnableRedraw(False)
+		For Each str_Rosa In arrLinee_rosa
+			If rhino.IsLine(str_rosa) Then
+				Rhino.SetObjectData str_Rosa, "isogrid", "linee", "verdi"
+				rhino.ObjectColor str_Rosa, rgb(64, 190, 128)	
+			End If
+		Next
+		rhino.EnableRedraw(True)
+	End If
+	
+End Sub
