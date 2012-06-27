@@ -1,6 +1,6 @@
 Option Explicit
-'Script written by <Riccardo Costantini,Aurelio Perugini,Emilio Morello>
-'Script copyrighted by <www.mixexperience3d.com>
+'Script written by Riccardo Costantini,Aurelio Perugini,Emilio Morello
+'Script copyrighted by www.mixexperience3d.com
 
 
 Call Main()
@@ -29,8 +29,8 @@ Sub Main()
 	strName = Rhino.GetString("Set Number Series - Seleziona numero serie", , arrNames)
 	If strname = "" Then Exit Sub
 
-	strvalore = rhino.getreal("Slab Thickness - Spessore Lastra", 1.2, 0.002) / 2
-	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, 0.002) / 2
+	strvalore = rhino.getreal("Slab Thickness - Spessore Lastra", 1.2, 0.2) / 2
+	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, 0.2) / 2
 	If strvalore >= spessore_taglio Then
 		Msgbox"The vaolre cutting must be greater" & VbCrLf & "Il valore del taglio deve essere maggiore"
 		Exit Sub
