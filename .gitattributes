@@ -22,3 +22,5 @@
 *.RTF	 diff=astextplain
 *.rvb	 diff=astextplain
 *.3dm	 diff=astextplain
+*.rhp  diff=astextplain
+*.mcp  diff=astextplain
