@@ -4,12 +4,13 @@ Option Explicit
 
 
 Call Main()
+Dim arrLineeRosaProiettate2,arrLineebluProiettate2,arrLineeVerdiProiettate2
 Sub Main()
 	
 	SetLocale(1033)
 	
 	Dim arrLinee_rosa , arrLinee_blu,arrLinee_verdi
-	Dim strSolido
+	Dim strSolido,tmp_layer_name
 	Dim arrLineeRosaProiettate,arrLineebluProiettate,arrLineeVerdiProiettate
 	Dim arrSupRosa,arrSupBlu,arrSupVerdi
 	Dim strSupRosa,strSupBlu,strSupVerdi
@@ -20,7 +21,7 @@ Sub Main()
 	Dim arrFetteRosa,arrFetteBlu,arrFetteVerdi
 	Dim arrFetteRosa2,arrFetteBlu2,arrFetteVerdi2
 	Dim arrFetteRosaRis,arrFetteBluRis,arrFetteVerdiRis
-	Dim arrLineeRosaProiettate2,arrLineebluProiettate2,arrLineeVerdiProiettate2
+
 	',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 	Dim arrNames(1), strName
 
@@ -30,7 +31,12 @@ Sub Main()
 	If strname = "" Then Exit Sub
 
 	strvalore = rhino.getreal("Slab Thickness - Spessore Lastra", 1.2, 0.2) / 2
-	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, strvalore + 0.05) / 2
+	If strName = "2series" Then 
+		spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", strvalore * 2 + .01, strvalore) / 2
+	Else
+		spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, strvalore + 0.05) / 2
+	End If
+
 	If strvalore >= spessore_taglio Then
 		Msgbox"The vaolre cutting must be greater" & VbCrLf & "Il valore del taglio deve essere maggiore"
 		Exit Sub
@@ -56,9 +62,9 @@ Sub Main()
 		If Not IsArray(arrLinee_Verdi) Then Exit Sub
 		rhino.lockobjects arrLinee_verdi
 	End If
-	
+	rhino.EnableRedraw(True)
 	'seleziono solido
-	strSolido = Rhino.GetObject("Select Solid - Seleziona solido", 16)
+	strSolido = Rhino.GetObject("Select Solid - Seleziona solido", 8 + 16)
 
 	If Not IsNull(strSolido) Then
 		If Rhino.IsPolysurfaceClosed(strSolido) = False Then
@@ -77,6 +83,13 @@ Sub Main()
 	End If
 
 	'-----------------------------------------------------------
+	'creo layer master
+	tmp_layer_name = Rhino.CurrentLayer 
+	
+	Rhino.AddLayer "Master Isogrid"
+	Rhino.CurrentLayer"Master Isogrid"
+	
+	
 	'proietto prime curve
 	Rhino.print"Phase 1 of 10"
 	arrLineeRosaProiettate = Rhino.ProjectCurveToSurface(arrLinee_rosa, strSolido, Array(0, 0, -1))
@@ -244,6 +257,8 @@ Sub Main()
 	End If
 	'------------------------------------------------------------
 	'creo solidi rosa
+
+	
 	Rhino.print"Phase 5 of 10"
 	rhino.selectobjects arrSupRosa
 	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _enter", 0
@@ -283,12 +298,27 @@ Sub Main()
 	End If
 	'proietto nuovamente
 	'proietto prime curve
+	
+	Rhino.AddLayer"Section Red", RGB(254, 1, 1),,, "Master Isogrid"
+	Rhino.CurrentLayer("Section Red")
+
+
 	arrLineeRosaProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_rosa, arrFetteRosaris, Array(0, 0, -1))
+	Rhino.ObjectLayer arrLineeRosaProiettate2, "Section Red"
 	'proietto seconde curve
+	
+	Rhino.AddLayer"Section Blu", RGB(2, 2, 254),,, "Master Isogrid"
+	Rhino.CurrentLayer("Section Blu")
+	
 	arrLineeBluProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_blu, arrFetteBluris, Array(0, 0, -1))
+	Rhino.ObjectLayer arrLineeBluProiettate2, "Section Blu"
+	
 	'
 	If strName = "3series" Then
+		Rhino.AddLayer"Section Green", RGB(1, 128, 1),,, "Master Isogrid"
+		Rhino.CurrentLayer("Section Green")
 		arrLineeverdiProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_verdi, arrFetteverdiRis, Array(0, 0, -1))
+		Rhino.ObjectLayer arrLineeverdiProiettate2, "Section Green"
 	End If
 	
 	Rhino.print"Phase 7 of 10"
@@ -318,7 +348,9 @@ Sub Main()
 		'	rhino.DeleteObjects arrFetteBlu2
 		
 	End If
-	
+
+
+
 	'---------------------------------
 	Rhino.print"Phase 8 of 10"
 	'creo superfici da linee proiettate
@@ -349,32 +381,49 @@ Sub Main()
 	Rhino.print"Phase 9 of 10"
 	''------------------------------------------------------------
 	'creo solidi2
+	
+	'
+	Rhino.AddLayer "Solid Red", RGB(254, 1, 1),,, "Master Isogrid" 
+	Rhino.CurrentLayer("Solid Red")
+	'Rhino.AddLayer"Solid Blu", RGB(2, 2, 254),,, "Master Isogrid"
+	'Rhino.AddLayer "Solid Green", RGB(1, 128, 1),,, "Master Isogrid"
+	
+	
 	rhino.selectobjects arrSupRosa
 	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter", 0
-	rhino.UnselectAllObjects
-	rhino.Command"_sellast", 0
-	arrFetteRosa = rhino.SelectedObjects
-	Rhino.ObjectColor arrFetteRosa, rgb(255, 0, 255)
+	'	rhino.UnselectAllObjects
+	'	rhino.Command"_sellast", 0
+	'	arrFetteRosa = rhino.SelectedObjects
+	'	Rhino.ObjectColor arrFetteRosa, rgb(255, 0, 255)
 	rhino.UnselectAllObjects
 	
+
+	Rhino.AddLayer"Solid Blu", RGB(2, 2, 254),,, "Master Isogrid"
+	Rhino.CurrentLayer("Solid Blu")
+	'Rhino.AddLayer "Solid Green", RGB(1, 128, 1),,, "Master Isogrid"
 	
 	rhino.selectobjects arrSupblu
 	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter"', 0
 	rhino.UnselectAllObjects
 	rhino.Command"_sellast", 0
-	arrFetteBlu = rhino.SelectedObjects
-	Rhino.ObjectColor arrFetteblu, rgb(0, 0, 191)
+	'	arrFetteBlu = rhino.SelectedObjects
+	'	Rhino.ObjectColor arrFetteblu, rgb(0, 0, 191)
 	rhino.UnselectAllObjects
 	
 	
 	If strName = "3series" Then
+	
+		
+		Rhino.AddLayer "Solid Green", RGB(1, 128, 1),,, "Master Isogrid"
+		Rhino.CurrentLayer("Solid Green")
+		
 		rhino.selectobjects arrSupverdi
 		Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter", 0
-		rhino.UnselectAllObjects
-		rhino.Command"_sellast", 0
+		'rhino.UnselectAllObjects
+		'rhino.Command"_sellast", 0
 		'	rhino.LockedObjects Rhino.selected
-		arrFetteverdi = rhino.SelectedObjects
-		Rhino.ObjectColor arrFetteverdi, rgb(0, 255, 0)
+		'	arrFetteverdi = rhino.SelectedObjects
+		'	Rhino.ObjectColor arrFetteverdi, rgb(0, 255, 0)
 		rhino.UnselectAllObjects
 	End If
 	
@@ -389,11 +438,13 @@ Sub Main()
 		rhino.DeleteObjects	arrSupverdi	
 	End If
 	
-	
+	Numero_rosse
 	
 	'nascondo solido
 	rhino.HideObject strSolido
 	
+	'risetto layer
+	Rhino.CurrentLayer	tmp_layer_name
 	
 	
 	rhino.EnableRedraw(True)
@@ -442,6 +493,7 @@ Sub select_blu()
 	Next
 	rhino.EnableRedraw(True)
 End Sub
+
 Sub select_green()
 
 	Dim linee_red,arrObjects,strValue
@@ -464,3 +516,31 @@ Sub select_green()
 	Next
 	rhino.EnableRedraw(True)
 End Sub
+
+Sub Numero_rosse
+	Dim  strObject,i,arrPoint,arrMP
+
+	If IsArray(arrLineeRosaProiettate2) Then
+
+		
+		For Each strObject In arrLineeRosaProiettate2
+			i = i + 1
+			Rhino.SetObjectData strObject, "linee", "rosse", i
+			arrMP = Rhino.CurveAreaCentroid(strObject)
+			Rhino.AddTextDot i, arrMP(0)
+		Next
+		
+
+	End If
+	
+
+	
+End Sub
+
+'Rhino.AddLayer "Master Isogrid" 
+'Rhino.AddLayer "Solid Red", RGB(254, 1, 1),,, "Master Isogrid" 
+'Rhino.AddLayer"Solid Blu", RGB(2, 2, 254),,, "Master Isogrid"
+'Rhino.AddLayer "Solid Green", RGB(1, 128, 1),,, "Master Isogrid"
+'Rhino.AddLayer"Section Red", RGB(254, 1, 1),,, "Master Isogrid"
+'Rhino.AddLayer"Section Blu", RGB(2, 2, 254),,, "Master Isogrid"
+'Rhino.AddLayer"Section Green", RGB(1, 128, 1),,, "Master Isogrid"
