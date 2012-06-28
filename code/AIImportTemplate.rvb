@@ -1,0 +1,65 @@
+Option Explicit
+'Script written by <insert name>
+'Script copyrighted by <insert company name>
+
+
+Call Main()
+	'variabili-----------------------------------
+
+
+Sub Main()
+	'variabili-----------------------------------
+	Dim  strResult
+	Dim  PathRhp,strPercorso,arrTemplate
+	'---------------------------------------------
+	SetLocale(1033)
+	'percorso
+	PathRhp = Rhino.PlugInInfo("02278dc7-8b35-472d-72d9-53a96672ed47")
+	strPercorso = PathRhp(2)
+	strPercorso = replace(strPercorso, PathRhp(1) & ".rhp", "")
+		
+	strPercorso = strPercorso & "template\"
+	'	msgbox strPercorso
+	'----------------------------------------------
+	Dim objFSO,objStartFolder,colFiles,objFolder,objFile
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	objStartFolder = strPercorso
+	Set objFolder = objFSO.GetFolder(objStartFolder)
+	Set colFiles = objFolder.Files
+	'arrTemplate = colFiles
+	
+	For Each objFile In colFiles
+		msgbox objFile.Name	
+	
+	Next
+	'----------------------------------------------
+
+	'	If IsArray(arrTemplate) Then
+
+		'	strResult = Rhino.ListBox(arrTemplate, "Select Template to import")
+
+	'	End If
+
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
