@@ -1,0 +1,22 @@
+Option Explicit
+
+
+Call Main()
+Sub Main()
+	Dim arrLinee_rosa,str_Rosa
+	arrLinee_rosa = Rhino.GetObjects("Select first Lines( Red ) - Seleziona prime linee ( Rosse )", 4, False, True)
+	rhino.UnselectAllObjects
+	If Not IsArray(arrLinee_rosa) Then 
+		Exit Sub
+	Else
+		rhino.EnableRedraw(False)
+		For Each str_Rosa In arrLinee_rosa
+			If rhino.IsLine(str_rosa) Then
+				Rhino.SetObjectData str_Rosa, "isogrid", "linee", "rosse"
+				rhino.ObjectColor str_Rosa, rgb(254, 1, 1)	
+			End If
+		Next
+		rhino.EnableRedraw(True)
+	End If
+	
+End Sub

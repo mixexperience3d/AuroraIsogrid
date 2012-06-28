@@ -1,0 +1,66 @@
+Option Explicit
+'Script written by <insert name>
+'Script copyrighted by <insert company name>
+
+
+Call Main()
+
+Sub Main()
+	'variabili-----------------------------------
+	Dim  strResult,i
+	Dim  PathRhp,strPercorso,arrTemplate()
+	Dim objFSO,objStartFolder,colFiles,objFolder,objFile,strName
+	'---------------------------------------------
+	SetLocale(1033)
+	'percorso
+	PathRhp = Rhino.PlugInInfo("02278dc7-8b35-472d-72d9-53a96672ed47")
+	strPercorso = PathRhp(2)
+	strPercorso = replace(strPercorso, PathRhp(1) & ".rhp", "")
+		
+	strPercorso = strPercorso & "template\"
+	'	msgbox strPercorso
+	'----------------------------------------------
+
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	objStartFolder = strPercorso
+	Set objFolder = objFSO.GetFolder(objStartFolder)
+	Set colFiles = objFolder.Files
+	i = -1
+	For Each objFile In colFiles
+		If UCase(objFSO.GetExtensionName(objFile.name)) = "3DM" 	Then
+			i = i + 1
+			strName = objFile.Name
+			ReDim Preserve arrTemplate(i)
+			arrTemplate(i) = cstr(strName)
+			
+		End If 
+	Next
+	'----------------------------------------------
+	If IsArray(arrTemplate) Then
+		strResult = Rhino.ListBox(arrTemplate, "Select Name Template to import")
+	End If
+	If isnull(strResult)Then Exit Sub
+	strPercorso = strPercorso & strResult
+	Rhino.command"_-import " & chr(34) & strPercorso & chr(34) & " _enter", 0
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

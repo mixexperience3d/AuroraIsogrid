@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<monkeycompilerproject>
+   <!--Monkey Compiler Project-->
+   <!--giovedì 28 giugno 2012 13.16.19-->
+   <settings>
+      <project>
+         <name>AuroraIsogrid</name>
+         <version>0.1</version>
+         <path>C:\Documents and Settings\Administrator\Desktop\AuroraIsogrid.rhp</path>
+      </project>
+      <user>
+         <address>&lt;Developer address&gt;</address>
+         <country>&lt;Developer country&gt;</country>
+         <email>support@mixexperience3d.com</email>
+         <phone>&lt;Developer phone&gt;</phone>
+         <fax>&lt;Developer fax&gt;</fax>
+         <organisation>mixexperience3d</organisation>
+         <website>http://mixexperience.ning.com/group/jewels</website>
+         <url></url>
+      </user>
+      <compilation>
+         <loadmessage></loadmessage>
+         <loadatstartup>true</loadatstartup>
+         <encrypt>true</encrypt>
+         <createmenu>true</createmenu>
+      </compilation>
+      <licensing>
+         <protect>false</protect>
+         <prefix>XXXX</prefix>
+         <hash></hash>
+      </licensing>
+      <menu>
+         <menuitem>
+            <name>AuroraIsogrid</name>
+            <macro></macro>
+            <divider>false</divider>
+            <submenu>
+               <menuitem>
+                  <name>Set Line</name>
+                  <macro></macro>
+                  <divider>false</divider>
+                  <submenu>
+                     <menuitem>
+                        <name>First Lines Red</name>
+                        <macro>AIOSetLineRed</macro>
+                        <divider>false</divider>
+                        <submenu></submenu>
+                     </menuitem>
+                     <menuitem>
+                        <name>Second Lines Blue</name>
+                        <macro>AIOSetLineBlue</macro>
+                        <divider>false</divider>
+                        <submenu></submenu>
+                     </menuitem>
+                     <menuitem>
+                        <name>Third Lines Green</name>
+                        <macro></macro>
+                        <divider>false</divider>
+                        <submenu></submenu>
+                     </menuitem>
+                  </submenu>
+               </menuitem>
+               <menuitem>
+                  <name>IsoGrid</name>
+                  <macro>_AIsoGrid</macro>
+                  <divider>false</divider>
+                  <submenu></submenu>
+               </menuitem>
+               <menuitem>
+                  <name>Insert Template</name>
+                  <macro>_AIImportTemplate</macro>
+                  <divider>false</divider>
+                  <submenu></submenu>
+               </menuitem>
+            </submenu>
+         </menuitem>
+      </menu>
+   </settings>
+   <commands>
+      <command>
+         <name>AIImportTemplate</name>
+         <path>K:\MyDocuments\Progetti VS10\gibhunt\AuroraIsogrid\code\AIImportTemplate.rvb</path>
+         <hidden>false</hidden>
+         <echoed>false</echoed>
+         <disableundo>false</disableundo>
+         <islibrary>false</islibrary>
+      </command>
+      <command>
+         <name>AIOSetLineBlue</name>
+         <path>K:\MyDocuments\Progetti VS10\gibhunt\AuroraIsogrid\code\AIOSetLineBlue.rvb</path>
+         <hidden>false</hidden>
+         <echoed>false</echoed>
+         <disableundo>false</disableundo>
+         <islibrary>false</islibrary>
+      </command>
+      <command>
+         <name>AIOSetLineGreen</name>
+         <path>K:\MyDocuments\Progetti VS10\gibhunt\AuroraIsogrid\code\AIOSetLineGreen.rvb</path>
+         <hidden>false</hidden>
+         <echoed>false</echoed>
+         <disableundo>false</disableundo>
+         <islibrary>false</islibrary>
+      </command>
+      <command>
+         <name>AIOSetLineRed</name>
+         <path>K:\MyDocuments\Progetti VS10\gibhunt\AuroraIsogrid\code\AIOSetLineRed.rvb</path>
+         <hidden>false</hidden>
+         <echoed>false</echoed>
+         <disableundo>false</disableundo>
+         <islibrary>false</islibrary>
+      </command>
+      <command>
+         <name>AIsoGrid</name>
+         <path>K:\MyDocuments\Progetti VS10\gibhunt\AuroraIsogrid\code\AIsoGrid.rvb</path>
+         <hidden>false</hidden>
+         <echoed>false</echoed>
+         <disableundo>false</disableundo>
+         <islibrary>false</islibrary>
+      </command>
+   </commands>
+</monkeycompilerproject>

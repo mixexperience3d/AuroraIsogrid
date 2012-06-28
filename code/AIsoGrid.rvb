@@ -1,0 +1,466 @@
+Option Explicit
+'Script written by Riccardo Costantini,Aurelio Perugini,Emilio Morello
+'Script copyrighted by www.mixexperience3d.com
+
+
+Call Main()
+Sub Main()
+	
+	SetLocale(1033)
+	
+	Dim arrLinee_rosa , arrLinee_blu,arrLinee_verdi
+	Dim strSolido
+	Dim arrLineeRosaProiettate,arrLineebluProiettate,arrLineeVerdiProiettate
+	Dim arrSupRosa,arrSupBlu,arrSupVerdi
+	Dim strSupRosa,strSupBlu,strSupVerdi
+	Dim arrLineeIntersezione,strLineaInt,arrLineeIntersezioneVerdi
+	Dim arrMidPt,arrEndPt,dblLunghezzaLinea
+	Dim strvalore,Parametro,curva1,spessore_taglio
+	Dim arrPipeRosa, arrPipeblue,arrPipeVerdi,arrPipeVerdi2
+	Dim arrFetteRosa,arrFetteBlu,arrFetteVerdi
+	Dim arrFetteRosa2,arrFetteBlu2,arrFetteVerdi2
+	Dim arrFetteRosaRis,arrFetteBluRis,arrFetteVerdiRis
+	Dim arrLineeRosaProiettate2,arrLineebluProiettate2,arrLineeVerdiProiettate2
+	',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+	Dim arrNames(1), strName
+
+	arrNames(0) = "2series"
+	arrNames(1) = "3series"
+	strName = Rhino.GetString("Set Number Series - Seleziona numero serie", , arrNames)
+	If strname = "" Then Exit Sub
+
+	strvalore = rhino.getreal("Slab Thickness - Spessore Lastra", 1.2, 0.2) / 2
+	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, strvalore + 0.05) / 2
+	If strvalore >= spessore_taglio Then
+		Msgbox"The vaolre cutting must be greater" & VbCrLf & "Il valore del taglio deve essere maggiore"
+		Exit Sub
+	End If
+	
+	'----------------------------------------------------
+	'seleziono prime righe
+	select_red
+	arrLinee_rosa = Rhino.GetObjects("Select first Lines( Red ) - Seleziona prime linee ( Rosse )", 4, False, True)
+	rhino.UnselectAllObjects
+	If Not IsArray(arrLinee_rosa) Then Exit Sub
+	rhino.lockobjects arrLinee_rosa
+	
+	'seleziono seconde linee
+	select_blu
+	arrLinee_blu = Rhino.GetObjects("Select Second Lines ( Blue ) - Seleziona seconde linee ( Blu )", 4, True, True)
+	If Not IsArray(arrLinee_blu) Then Exit Sub
+	rhino.lockobjects arrLinee_blu
+	
+	If strName = "3series" Then
+		select_green
+		arrLinee_verdi = Rhino.GetObjects("Select third Lines ( Green ) - Seleziona terze linee ( Verdi )", 4, True, True)
+		If Not IsArray(arrLinee_Verdi) Then Exit Sub
+		rhino.lockobjects arrLinee_verdi
+	End If
+	
+	'seleziono solido
+	strSolido = Rhino.GetObject("Select Solid - Seleziona solido", 16)
+
+	If Not IsNull(strSolido) Then
+		If Rhino.IsPolysurfaceClosed(strSolido) = False Then
+			Msgbox "The polysurface is not closed." & VbCrLf & "Il Solido deve essere chiuso"
+			Exit Sub
+		End If
+	End If
+	
+
+	rhino.EnableRedraw(False)
+	
+	rhino.unlockobjects arrLinee_rosa
+	rhino.unlockobjects arrLinee_blu
+	If strName = "3series" Then
+		rhino.unlockobjects arrLinee_Verdi	
+	End If
+
+	'-----------------------------------------------------------
+	'proietto prime curve
+	Rhino.print"Phase 1 of 10"
+	arrLineeRosaProiettate = Rhino.ProjectCurveToSurface(arrLinee_rosa, strSolido, Array(0, 0, -1))
+	'proietto seconde curve
+	arrLineeBluProiettate = Rhino.ProjectCurveToSurface(arrLinee_blu, strSolido, Array(0, 0, -1))
+	'proietto terze curve
+	If strName = "3series" Then
+		arrLineeVerdiProiettate = Rhino.ProjectCurveToSurface(arrLinee_Verdi, strSolido, Array(0, 0, -1))
+		
+	End If
+	'-----------------------------------------------------------
+	'creo superfici da linee proiettate
+	'rosa
+	Rhino.print"Phase 2 of 10"
+	For Each strSupRosa In arrLineeRosaProiettate
+		Rhino.AddPlanarSrf(strSupRosa) 
+		rhino.SelectObject	Rhino.FirstObject
+	Next
+	arrSupRosa = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	
+	'blu
+	For Each strSupblu In arrLineebluProiettate
+		Rhino.AddPlanarSrf(strSupblu) 
+		rhino.SelectObject	Rhino.FirstObject
+	Next
+	arrSupblu = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	'verdi
+	If strName = "3series" Then
+		For Each strSupVerdi In arrLineeverdiProiettate
+			Rhino.AddPlanarSrf(strSupverdi) 
+			rhino.SelectObject	Rhino.FirstObject
+		Next
+		arrSupverdi = rhino.SelectedObjects
+		rhino.UnselectAllObjects
+	End If
+	
+	'-----------------------------------------------------------
+	'	creo intersezione superfici
+	Rhino.print"Phase 3 of 10"
+	rhino.SelectObjects arrSupRosa
+	rhino.SelectObjects arrSupBlu
+
+	rhino.Command("! _Intersect"), 0
+	arrLineeIntersezione = rhino.selectedobjects
+	rhino.UnselectAllObjects
+	
+	If strName = "3series" Then
+		rhino.SelectObjects arrSupRosa
+		rhino.SelectObjects arrSupverdi	
+		rhino.Command("! _Intersect"), 0
+		arrLineeIntersezioneVerdi = rhino.selectedobjects
+		rhino.UnselectAllObjects
+		
+		
+		rhino.SelectObjects arrSupBlu
+		rhino.SelectObjects arrSupverdi	
+		rhino.Command("! _Intersect"), 0
+		rhino.SelectObjects arrLineeIntersezioneVerdi
+		arrLineeIntersezioneVerdi = rhino.selectedobjects
+		rhino.UnselectAllObjects
+	
+		
+		
+		
+	End If
+	
+	
+	'------------------------------------------------------------
+	'estendo linee rosa blu e creo pipe
+	Rhino.print"Phase 4 of 10"
+	For Each strLineaInt In arrLineeIntersezione
+		arrMidPt = rhino.CurveMidPoint(strLineaInt)
+		arrEndPt = rhino.CurveendPoint(strLineaInt)
+		dblLunghezzaLinea = rhino.CurveLength(strLineaInt) / 2 + 10
+		rhino.SelectObject strLineaInt
+		Rhino.Command("_scale1d _copy=_no " & rhino.Pt2Str(arrMidPt) & " " & rhino.Pt2Str(arrEndPt) & " " & dblLunghezzaLinea), 0
+	
+	
+		'-------------------------------------------------
+		Parametro = Rhino.CurveClosestPoint(strLineaInt, arrMidPt)
+		curva1 = Rhino.SplitCurve(strLineaInt, Parametro)
+		Dim tmp
+		If Rhino.CurveMidPoint(curva1(0))(2) > Rhino.CurveMidPoint(curva1(1))(2) Then
+			tmp = curva1(0)
+			curva1(0) = curva1(1)
+			curva1(1) = tmp
+		End If
+			
+		
+		
+		rhino.SelectObject curva1(0)
+		rhino.Command("_pipe " & spessore_taglio & " _enter _enter _enter"), 0
+		Rhino.ObjectColor Rhino.FirstObject(), RGB(107, 79, 121)
+		rhino.UnselectAllObjects
+		
+			
+		rhino.SelectObject curva1(1)
+		rhino.Command("_pipe " & spessore_taglio & " _enter _enter _enter"), 0
+		Rhino.ObjectColor Rhino.FirstObject(), RGB(125, 66, 66)
+		rhino.UnselectAllObjects
+
+		rhino.deleteobjects curva1
+		rhino.UnselectAllObjects
+	Next
+	
+	'------------------------------------------------------------
+	'estendo linee verdi e creo pipe
+	
+	If strName = "3series" Then
+		Rhino.print"Phase 4.1 of 10"
+		For Each strLineaInt In arrLineeIntersezioneVerdi
+			arrMidPt = rhino.CurveMidPoint(strLineaInt)
+			arrEndPt = rhino.CurveendPoint(strLineaInt)
+			dblLunghezzaLinea = rhino.CurveLength(strLineaInt) / 2 + 10
+			rhino.SelectObject strLineaInt
+			Rhino.Command("_scale1d _copy=_no " & rhino.Pt2Str(arrMidPt) & " " & rhino.Pt2Str(arrEndPt) & " " & dblLunghezzaLinea), 0
+			'	Rhino.ScaleObject strLineaInt, arrOrigin, array(1, 2, 3), True
+	
+			'-------------------------------------------------
+			Parametro = Rhino.CurveClosestPoint(strLineaInt, arrMidPt)
+			curva1 = Rhino.SplitCurve(strLineaInt, Parametro)
+			'Dim tmp
+			If Rhino.CurveMidPoint(curva1(0))(2) > Rhino.CurveMidPoint(curva1(1))(2) Then
+				tmp = curva1(0)
+				curva1(0) = curva1(1)
+				curva1(1) = tmp
+			End If
+			
+		
+		
+			rhino.SelectObject curva1(0)
+			rhino.Command("_pipe " & spessore_taglio & " _enter _enter _enter"), 0
+			Rhino.ObjectColor Rhino.FirstObject(), RGB(107, 79, 122)
+			rhino.UnselectAllObjects
+		
+			
+			rhino.SelectObject curva1(1)
+			rhino.Command("_pipe " & spessore_taglio & " _enter _enter _enter"), 0
+			Rhino.ObjectColor Rhino.FirstObject(), RGB(125, 66, 67)
+			rhino.UnselectAllObjects
+
+			rhino.deleteobjects curva1
+			rhino.UnselectAllObjects
+		Next
+	End If 
+	'------------------------------------------------------------
+	rhino.Command("'_SelColor _rgb 125 66 66"), 0
+	arrPipeRosa = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	rhino.Command("'_SelColor _rgb 107 79 121")	, 0
+	arrPipeblue = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	
+	If strName = "3series" Then
+		rhino.Command("'_SelColor _rgb 107 79 122")	, 0
+		arrPipeVerdi = rhino.SelectedObjects
+		rhino.UnselectAllObjects
+		
+		
+		rhino.Command("'_SelColor _rgb 125 66 67")	, 0
+		arrPipeVerdi2 = rhino.SelectedObjects
+		rhino.UnselectAllObjects
+	End If
+	'------------------------------------------------------------
+	'creo solidi rosa
+	Rhino.print"Phase 5 of 10"
+	rhino.selectobjects arrSupRosa
+	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _enter", 0
+	rhino.Command"_sellast", 0
+	arrFetteRosa = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	
+	'creo solidi blue
+	rhino.selectobjects arrSupblu
+	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _enter", 0
+	rhino.Command"_sellast", 0
+	arrFetteBlu = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	'creo solidi verde
+	If strName = "3series" Then
+		rhino.selectobjects arrSupverdi
+		Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _enter", 0
+		rhino.Command"_sellast", 0
+		arrFetteVerdi = rhino.SelectedObjects
+		rhino.UnselectAllObjects
+	End If
+	
+	
+	'------------------------------------------------------------
+	'booleane
+
+
+	Rhino.print"Phase 6 of 10"
+	If strName = "3series" Then
+		arrFetteVerdiRis = Rhino.BooleanDifference(arrFetteVerdi, arrPipeVerdi, False) 
+		arrFetteRosaris = Rhino.BooleanDifference(arrFetteRosa, Rhino.JoinArrays(arrPipeRosa, arrPipeVerdi2), False)
+		arrFetteBluris = Rhino.BooleanDifference(arrFetteBlu, Rhino.JoinArrays(arrPipeblue, arrPipeVerdi2), False)
+	Else
+		arrFetteRosaRis = Rhino.BooleanDifference(arrFetteRosa, arrPipeRosa, False) 
+		arrFetteBluRis = Rhino.BooleanDifference(arrFetteblu, arrPipeblue, False) 
+		
+	End If
+	'proietto nuovamente
+	'proietto prime curve
+	arrLineeRosaProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_rosa, arrFetteRosaris, Array(0, 0, -1))
+	'proietto seconde curve
+	arrLineeBluProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_blu, arrFetteBluris, Array(0, 0, -1))
+	'
+	If strName = "3series" Then
+		arrLineeverdiProiettate2 = Rhino.ProjectCurveToSurface(arrLinee_verdi, arrFetteverdiRis, Array(0, 0, -1))
+	End If
+	
+	Rhino.print"Phase 7 of 10"
+	'--------------------------------
+	'cancello quello che non serve
+	rhino.DeleteObjects arrLineeRosaProiettate
+	rhino.DeleteObjects arrLineebluProiettate
+	rhino.DeleteObjects	arrPipeRosa
+	rhino.DeleteObjects	arrPipeblue
+	rhino.DeleteObjects	arrSupRosa
+	rhino.DeleteObjects	arrSupblu
+	rhino.DeleteObjects	arrFetteRosa
+	rhino.DeleteObjects	arrFetteBlu
+	rhino.DeleteObjects	arrFetteRosaRis
+	rhino.DeleteObjects	arrFetteBluRis
+	
+	
+	If strName = "3series" Then
+		rhino.DeleteObjects arrLineeverdiProiettate
+		rhino.DeleteObjects	arrSupverdi
+		rhino.DeleteObjects	arrFetteverdi
+		rhino.DeleteObjects	arrFetteverdiRis
+		rhino.DeleteObjects	arrPipeblue
+		rhino.DeleteObjects	arrPipeverdi
+		rhino.DeleteObjects	arrPipeverdi2
+		'	rhino.DeleteObjects arrFetterosa2
+		'	rhino.DeleteObjects arrFetteBlu2
+		
+	End If
+	
+	'---------------------------------
+	Rhino.print"Phase 8 of 10"
+	'creo superfici da linee proiettate
+	For Each strSupRosa In arrLineeRosaProiettate2
+		Rhino.AddPlanarSrf(strSupRosa) 
+		rhino.SelectObject	Rhino.FirstObject
+	Next
+	arrSupRosa = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	
+
+	For Each strSupblu In arrLineebluProiettate2
+		Rhino.AddPlanarSrf(strSupblu) 
+		rhino.SelectObject	Rhino.FirstObject
+	Next
+	arrSupblu = rhino.SelectedObjects
+	rhino.UnselectAllObjects
+	
+	If strName = "3series" Then
+		For Each strSupverdi In arrLineeverdiProiettate2
+			Rhino.AddPlanarSrf(strSupverdi) 
+			rhino.SelectObject	Rhino.FirstObject
+		Next
+		arrSupverdi = rhino.SelectedObjects
+		rhino.UnselectAllObjects
+		
+	End If
+	Rhino.print"Phase 9 of 10"
+	''------------------------------------------------------------
+	'creo solidi2
+	rhino.selectobjects arrSupRosa
+	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter", 0
+	rhino.UnselectAllObjects
+	rhino.Command"_sellast", 0
+	arrFetteRosa = rhino.SelectedObjects
+	Rhino.ObjectColor arrFetteRosa, rgb(255, 0, 255)
+	rhino.UnselectAllObjects
+	
+	
+	rhino.selectobjects arrSupblu
+	Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter"', 0
+	rhino.UnselectAllObjects
+	rhino.Command"_sellast", 0
+	arrFetteBlu = rhino.SelectedObjects
+	Rhino.ObjectColor arrFetteblu, rgb(0, 0, 191)
+	rhino.UnselectAllObjects
+	
+	
+	If strName = "3series" Then
+		rhino.selectobjects arrSupverdi
+		Rhino.Command"_offsetsrf _Distance " & strvalore & " _Corner=_Round _Solid=_yes _Loose=_No _BothSides=_yes _DeleteInput=_yes _enter", 0
+		rhino.UnselectAllObjects
+		rhino.Command"_sellast", 0
+		'	rhino.LockedObjects Rhino.selected
+		arrFetteverdi = rhino.SelectedObjects
+		Rhino.ObjectColor arrFetteverdi, rgb(0, 255, 0)
+		rhino.UnselectAllObjects
+	End If
+	
+	
+	Rhino.print"Phase 10 of 10"
+	
+	'cancello 
+	rhino.DeleteObjects	arrSupRosa
+	rhino.DeleteObjects	arrSupblu
+	rhino.DeleteObjects	arrLineeIntersezione
+	If strName = "3series" Then
+		rhino.DeleteObjects	arrSupverdi	
+	End If
+	
+	
+	
+	'nascondo solido
+	rhino.HideObject strSolido
+	
+	
+	
+	rhino.EnableRedraw(True)
+End Sub
+
+Sub select_red()
+
+	Dim linee_red,arrObjects,strValue
+	rhino.EnableRedraw(False)
+	Rhino.UnselectAllObjects
+	Rhino.command"_selCrv", 0
+	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
+	Rhino.UnselectAllObjects
+
+	For Each linee_red In arrObjects
+		strValue = Rhino.GetObjectData(linee_red, "isogrid", "linee")
+		If strValue = "rosse" Then
+			rhino.SelectObject linee_red
+		End If
+	Next
+	rhino.EnableRedraw(True)
+End Sub
+
+Sub select_blu()
+
+	Dim linee_red,arrObjects,strValue
+	rhino.EnableRedraw(False)
+	Rhino.UnselectAllObjects
+	Rhino.command"_selCrv", 0
+	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
+	Rhino.UnselectAllObjects
+
+	For Each linee_red In arrObjects
+		strValue = Rhino.GetObjectData(linee_red, "isogrid", "linee")
+		If strValue = "blu" Then
+			rhino.SelectObject linee_red
+		End If
+	Next
+	rhino.EnableRedraw(True)
+End Sub
+Sub select_green()
+
+	Dim linee_red,arrObjects,strValue
+	rhino.EnableRedraw(False)
+	Rhino.UnselectAllObjects
+	Rhino.command"_selCrv", 0
+	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
+	Exit Sub
+	Rhino.UnselectAllObjects
+
+	For Each linee_red In arrObjects
+		strValue = Rhino.GetObjectData(linee_red, "isogrid", "linee")
+		If strValue = "verdi" Then
+			rhino.SelectObject linee_red
+		End If
+	Next
+	rhino.EnableRedraw(True)
+End Sub
