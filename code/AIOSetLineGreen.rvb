@@ -13,7 +13,7 @@ Sub Main()
 		For Each str_Rosa In arrLinee_rosa
 			If rhino.IsLine(str_rosa) Then
 				Rhino.SetObjectData str_Rosa, "isogrid", "linee", "verdi"
-				rhino.ObjectColor str_Rosa, rgb(64, 190, 128)	
+				rhino.ObjectColor str_Rosa, rgb(1, 128, 1)	
 			End If
 		Next
 		rhino.EnableRedraw(True)

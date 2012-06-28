@@ -30,7 +30,7 @@ Sub Main()
 	If strname = "" Then Exit Sub
 
 	strvalore = rhino.getreal("Slab Thickness - Spessore Lastra", 1.2, 0.2) / 2
-	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, 0.2) / 2
+	spessore_taglio = rhino.getreal("Cutting Thickness - Spessore Taglio", 2.1, strvalore + 0.05) / 2
 	If strvalore >= spessore_taglio Then
 		Msgbox"The vaolre cutting must be greater" & VbCrLf & "Il valore del taglio deve essere maggiore"
 		Exit Sub
@@ -155,7 +155,7 @@ Sub Main()
 		dblLunghezzaLinea = rhino.CurveLength(strLineaInt) / 2 + 10
 		rhino.SelectObject strLineaInt
 		Rhino.Command("_scale1d _copy=_no " & rhino.Pt2Str(arrMidPt) & " " & rhino.Pt2Str(arrEndPt) & " " & dblLunghezzaLinea), 0
-		'	Rhino.ScaleObject strLineaInt, arrOrigin, array(1, 2, 3), True
+	
 	
 		'-------------------------------------------------
 		Parametro = Rhino.CurveClosestPoint(strLineaInt, arrMidPt)
@@ -406,6 +406,10 @@ Sub select_red()
 	Rhino.UnselectAllObjects
 	Rhino.command"_selCrv", 0
 	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
 	Rhino.UnselectAllObjects
 
 	For Each linee_red In arrObjects
@@ -424,6 +428,10 @@ Sub select_blu()
 	Rhino.UnselectAllObjects
 	Rhino.command"_selCrv", 0
 	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
 	Rhino.UnselectAllObjects
 
 	For Each linee_red In arrObjects
@@ -441,6 +449,11 @@ Sub select_green()
 	Rhino.UnselectAllObjects
 	Rhino.command"_selCrv", 0
 	arrObjects = Rhino.selectedobjects
+	If isnull(arrobjects)Then 
+		rhino.EnableRedraw(True)
+		Exit Sub
+	End If
+	Exit Sub
 	Rhino.UnselectAllObjects
 
 	For Each linee_red In arrObjects
